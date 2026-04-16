@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  messepass:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - messepass-data:/data
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    restart: unless-stopped
+
+volumes:
+  messepass-data:
