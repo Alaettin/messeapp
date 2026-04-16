@@ -5,33 +5,41 @@ export async function generateAvatar(
   selections: Record<string, string>,
   freeText: string
 ): Promise<{ prompt: string; imageBuffer: Buffer }> {
+  const isBald = selections.hair_style === 'bald head, no hair';
+
   const parts: string[] = [
-    'Erstelle ein freundliches, professionelles Cartoon-Portrait im modernen Flat-Design-Stil.',
+    'Create a single portrait of exactly one person.',
+    'Style: friendly, professional cartoon illustration, modern flat design, suitable as a profile picture.',
+    'Composition: head and shoulders only, centered, one face, no duplicates, no multiple views.',
   ];
 
-  if (selections.hair_color) {
-    parts.push(`Die Person hat ${selections.hair_color} Haare.`);
-  }
-  if (selections.face_shape) {
-    parts.push(`Das Gesicht ist ${selections.face_shape}.`);
-  }
-  if (selections.features) {
-    parts.push(`Besondere Merkmale: ${selections.features}.`);
+  // Gender & Age
+  if (selections.gender) parts.push(`The person is a ${selections.gender}.`);
+  if (selections.age) parts.push(`Age: ${selections.age}.`);
+
+  // Hair
+  if (isBald) {
+    parts.push('The person is completely bald with no hair at all.');
+  } else {
+    if (selections.hair_color) parts.push(`Hair color: ${selections.hair_color}.`);
+    if (selections.hair_style) parts.push(`Hairstyle: ${selections.hair_style}.`);
   }
 
-  // Add any other selections not covered above
-  for (const [key, value] of Object.entries(selections)) {
-    if (!['hair_color', 'face_shape', 'features'].includes(key) && value) {
-      parts.push(`${key}: ${value}.`);
-    }
-  }
+  // Face
+  if (selections.face_shape) parts.push(`Face shape: ${selections.face_shape}.`);
+  if (selections.facial_hair) parts.push(`Facial hair: ${selections.facial_hair}.`);
+  if (selections.glasses) parts.push(`${selections.glasses}.`);
+
+  // Body & Clothing
+  if (selections.build) parts.push(`Build: ${selections.build}.`);
+  if (selections.clothing) parts.push(`Clothing: ${selections.clothing}.`);
 
   if (freeText.trim()) {
-    parts.push(`Zusätzliche Beschreibung: ${freeText.trim()}.`);
+    parts.push(`Additional details: ${freeText.trim()}.`);
   }
 
-  parts.push('Hintergrund: sanfter Farbverlauf in Teal-Tönen (#00A587).');
-  parts.push('Stil: Moderne Vektor-Illustration, freundlich, professionell, geeignet als Profilbild.');
+  parts.push('Background: soft teal gradient (#00A587).');
+  parts.push('Important: Show only ONE person, no collage, no multiple angles, no split views.');
 
   const prompt = parts.join(' ');
 
@@ -48,7 +56,6 @@ export async function generateAvatar(
     throw new Error('DALL-E returned no image URL');
   }
 
-  // Download the temporary URL immediately (30s timeout)
   const dlTimeout = await getSetting('avatar_download_timeout', 30) * 1000;
   const imageResponse = await fetch(imageUrl, { signal: AbortSignal.timeout(dlTimeout) });
   if (!imageResponse.ok) {

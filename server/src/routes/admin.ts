@@ -127,13 +127,13 @@ router.get('/api/admin/contacts', async (_req, res) => {
 
 router.post('/api/admin/contacts', async (req, res) => {
   try {
-    const { name, role, email, phone } = req.body;
+    const { name, company, role, email, phone, website, linkedin, notes } = req.body;
     if (!name) return res.status(400).json({ error: 'Name ist erforderlich' });
 
     const contact = await withDb((db) => {
       db.run(
-        'INSERT INTO contacts (name, role, email, phone) VALUES (?, ?, ?, ?)',
-        [name, role || null, email || null, phone || null]
+        'INSERT INTO contacts (name, company, role, email, phone, website, linkedin, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [name, company || null, role || null, email || null, phone || null, website || null, linkedin || null, notes || null]
       );
       const idResult = db.exec('SELECT last_insert_rowid() as id');
       const contactId = idResult[0].values[0][0] as number;
@@ -149,14 +149,18 @@ router.post('/api/admin/contacts', async (req, res) => {
 
 router.put('/api/admin/contacts/:id', async (req, res) => {
   try {
-    const { name, role, email, phone, active, sort_order } = req.body;
+    const { name, company, role, email, phone, website, linkedin, notes, active, sort_order } = req.body;
 
     const fields: string[] = [];
     const values: SqlValue[] = [];
     if (name !== undefined) { fields.push('name = ?'); values.push(name); }
+    if (company !== undefined) { fields.push('company = ?'); values.push(company || null); }
     if (role !== undefined) { fields.push('role = ?'); values.push(role || null); }
     if (email !== undefined) { fields.push('email = ?'); values.push(email || null); }
     if (phone !== undefined) { fields.push('phone = ?'); values.push(phone || null); }
+    if (website !== undefined) { fields.push('website = ?'); values.push(website || null); }
+    if (linkedin !== undefined) { fields.push('linkedin = ?'); values.push(linkedin || null); }
+    if (notes !== undefined) { fields.push('notes = ?'); values.push(notes || null); }
     if (active !== undefined) { fields.push('active = ?'); values.push(active ? 1 : 0); }
     if (sort_order !== undefined) { fields.push('sort_order = ?'); values.push(sort_order); }
     if (fields.length === 0) return res.status(400).json({ error: 'Keine Felder zum Aktualisieren' });

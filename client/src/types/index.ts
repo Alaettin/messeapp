@@ -29,9 +29,13 @@ export interface Document {
 export interface Contact {
   id: number;
   name: string;
+  company: string | null;
   role: string | null;
   email: string | null;
   phone: string | null;
+  website: string | null;
+  linkedin: string | null;
+  notes: string | null;
   photo_path: string | null;
   active: boolean;
   sort_order: number;

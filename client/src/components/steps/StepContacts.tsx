@@ -83,9 +83,9 @@ export default function StepContacts({ identifier: _identifier, onComplete }: St
                     <p className={`text-sm font-medium truncate ${selected ? 'text-accent' : 'text-txt-primary'}`}>
                       {contact.name}
                     </p>
-                    {contact.role && (
-                      <span className="text-xs text-txt-muted">{contact.role}</span>
-                    )}
+                    <span className="text-xs text-txt-muted">
+                      {[contact.company, contact.role].filter(Boolean).join(' · ')}
+                    </span>
                   </div>
                   {selected && (
                     <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-accent flex items-center justify-center">

@@ -11,7 +11,7 @@ export default function AdminContacts() {
   const [deleting, setDeleting] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [formData, setFormData] = useState({ name: '', role: '', email: '', phone: '' });
+  const [formData, setFormData] = useState({ name: '', company: '', role: '', email: '', phone: '', website: '', linkedin: '', notes: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,7 +30,7 @@ export default function AdminContacts() {
   }
 
   function resetForm() {
-    setFormData({ name: '', role: '', email: '', phone: '' });
+    setFormData({ name: '', company: '', role: '', email: '', phone: '', website: '', linkedin: '', notes: '' });
     setShowForm(false);
     setEditingId(null);
   }
@@ -38,9 +38,13 @@ export default function AdminContacts() {
   function startEdit(contact: Contact) {
     setFormData({
       name: contact.name,
+      company: contact.company || '',
       role: contact.role || '',
       email: contact.email || '',
       phone: contact.phone || '',
+      website: contact.website || '',
+      linkedin: contact.linkedin || '',
+      notes: contact.notes || '',
     });
     setEditingId(contact.id);
     setShowForm(true);
@@ -117,9 +121,13 @@ export default function AdminContacts() {
         <Card padding="md">
           <div className="flex flex-col gap-3">
             <Input label="Name *" value={formData.name} onChange={(e) => setFormData(d => ({ ...d, name: e.target.value }))} />
+            <Input label="Firma" value={formData.company} onChange={(e) => setFormData(d => ({ ...d, company: e.target.value }))} placeholder="z.B. Neoception GmbH" />
             <Input label="Rolle" value={formData.role} onChange={(e) => setFormData(d => ({ ...d, role: e.target.value }))} placeholder="z.B. Sales Manager" />
             <Input label="E-Mail" type="email" value={formData.email} onChange={(e) => setFormData(d => ({ ...d, email: e.target.value }))} />
             <Input label="Telefon" type="tel" value={formData.phone} onChange={(e) => setFormData(d => ({ ...d, phone: e.target.value }))} />
+            <Input label="Website" value={formData.website} onChange={(e) => setFormData(d => ({ ...d, website: e.target.value }))} placeholder="z.B. www.neoception.com" />
+            <Input label="LinkedIn" value={formData.linkedin} onChange={(e) => setFormData(d => ({ ...d, linkedin: e.target.value }))} placeholder="z.B. linkedin.com/in/name" />
+            <Input label="Notizen" value={formData.notes} onChange={(e) => setFormData(d => ({ ...d, notes: e.target.value }))} />
             <div className="flex gap-2">
               <Button variant="ghost" fullWidth onClick={resetForm}>
                 Abbrechen
@@ -146,8 +154,8 @@ export default function AdminContacts() {
                     {contact.name}
                   </p>
                   <div className="flex items-center gap-2 flex-wrap">
-                    {contact.role && <span className="text-xs text-txt-muted">{contact.role}</span>}
-                    {contact.email && <span className="text-xs text-txt-muted">{contact.email}</span>}
+                    {contact.company && <span className="text-xs text-txt-muted">{contact.company}</span>}
+                    {contact.role && <span className="text-xs text-txt-muted">· {contact.role}</span>}
                   </div>
                 </div>
                 <button

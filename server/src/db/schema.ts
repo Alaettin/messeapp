@@ -37,9 +37,13 @@ export function initializeDatabase(db: Database): void {
     CREATE TABLE IF NOT EXISTS contacts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
+      company TEXT,
       role TEXT,
       email TEXT,
       phone TEXT,
+      website TEXT,
+      linkedin TEXT,
+      notes TEXT,
       photo_path TEXT,
       active INTEGER DEFAULT 1,
       sort_order INTEGER DEFAULT 0
