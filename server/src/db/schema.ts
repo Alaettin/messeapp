@@ -94,6 +94,7 @@ export function initializeDatabase(db: Database): void {
     ['avatar_timeout', '60'],
     ['avatar_download_timeout', '30'],
     ['weather_cache_minutes', '30'],
+    ['news_cache_minutes', '30'],
   ];
   for (const [key, value] of defaults) {
     db.run('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)', [key, value]);
@@ -106,6 +107,7 @@ export function initializeDatabase(db: Database): void {
     ['contacts', 'linkedin'],
     ['contacts', 'notes'],
     ['visitors', 'weather_enabled'],
+    ['visitors', 'news_enabled'],
   ];
   for (const [table, column] of migrations) {
     try {
@@ -115,13 +117,22 @@ export function initializeDatabase(db: Database): void {
     }
   }
 
-  // Set default for weather_enabled (NULL → 1)
+  // Set defaults for feature flags (NULL → 1)
   db.run("UPDATE visitors SET weather_enabled = '1' WHERE weather_enabled IS NULL");
+  db.run("UPDATE visitors SET news_enabled = '1' WHERE news_enabled IS NULL");
 
   // Weather cache table
   db.run(`
     CREATE TABLE IF NOT EXISTS weather_cache (
       address TEXT PRIMARY KEY,
+      data TEXT NOT NULL,
+      fetched_at DATETIME DEFAULT (datetime('now'))
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS news_cache (
+      city TEXT PRIMARY KEY,
       data TEXT NOT NULL,
       fetched_at DATETIME DEFAULT (datetime('now'))
     )

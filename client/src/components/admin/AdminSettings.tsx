@@ -8,6 +8,7 @@ export default function AdminSettings() {
   const [avatarTimeout, setAvatarTimeout] = useState('60');
   const [downloadTimeout, setDownloadTimeout] = useState('30');
   const [weatherCache, setWeatherCache] = useState('30');
+  const [newsCache, setNewsCache] = useState('30');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -21,6 +22,7 @@ export default function AdminSettings() {
         if (s.avatar_timeout) setAvatarTimeout(s.avatar_timeout);
         if (s.avatar_download_timeout) setDownloadTimeout(s.avatar_download_timeout);
         if (s.weather_cache_minutes) setWeatherCache(s.weather_cache_minutes);
+        if (s.news_cache_minutes) setNewsCache(s.news_cache_minutes);
       })
       .catch(err => {
         console.error(err);
@@ -39,6 +41,7 @@ export default function AdminSettings() {
         avatar_timeout: avatarTimeout,
         avatar_download_timeout: downloadTimeout,
         weather_cache_minutes: weatherCache,
+        news_cache_minutes: newsCache,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -109,16 +112,27 @@ export default function AdminSettings() {
       </Card>
 
       <Card padding="md">
-        <h3 className="font-semibold text-txt-primary mb-4">Wetter</h3>
-        <Input
-          label="Wetter-Cache (in Minuten)"
-          type="number"
-          min="1"
-          max="1440"
-          value={weatherCache}
-          onChange={(e) => setWeatherCache(e.target.value)}
-          helperText="Wie lange Wetterdaten pro Adresse gecached werden"
-        />
+        <h3 className="font-semibold text-txt-primary mb-4">Wetter & News</h3>
+        <div className="flex flex-col gap-3">
+          <Input
+            label="Wetter-Cache (in Minuten)"
+            type="number"
+            min="1"
+            max="1440"
+            value={weatherCache}
+            onChange={(e) => setWeatherCache(e.target.value)}
+            helperText="Wie lange Wetterdaten pro Adresse gecached werden"
+          />
+          <Input
+            label="News-Cache (in Minuten)"
+            type="number"
+            min="1"
+            max="1440"
+            value={newsCache}
+            onChange={(e) => setNewsCache(e.target.value)}
+            helperText="Wie lange News pro Standort gecached werden"
+          />
+        </div>
       </Card>
 
       <Button fullWidth onClick={handleSave} loading={saving}>

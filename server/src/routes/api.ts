@@ -2,7 +2,8 @@ import { Router } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { getDb } from '../db/index.js';
-import { getWeatherForAddress } from '../services/weather.js';
+import { getWeatherForAddress, extractCity } from '../services/weather.js';
+import { getNewsForCity } from '../services/news.js';
 
 const router = Router();
 const API_BASE = '/api/connector';
@@ -90,6 +91,14 @@ router.get(`${API_BASE}/model`, async (_req, res) => {
     model.push({ id: 'weather_humidity', name: 'Wetter - Luftfeuchtigkeit (%)', type: 0 });
     model.push({ id: 'weather_wind', name: 'Wetter - Wind (km/h)', type: 0 });
     model.push({ id: 'weather_location', name: 'Wetter - Standort', type: 0 });
+
+    // News properties
+    for (let i = 1; i <= 5; i++) {
+      model.push({ id: `news_${i}_title`, name: `News ${i} - Title`, type: 0 });
+      model.push({ id: `news_${i}_link`, name: `News ${i} - Link`, type: 0 });
+      model.push({ id: `news_${i}_source`, name: `News ${i} - Source`, type: 0 });
+      model.push({ id: `news_${i}_date`, name: `News ${i} - Date`, type: 0 });
+    }
 
     res.json(model);
   } catch (err) {
@@ -242,6 +251,26 @@ router.post(`${API_BASE}/Product/:itemId/values`, async (req, res) => {
         }
       } catch (err) {
         console.error('Weather fetch error:', err);
+      }
+    }
+
+    // News data (if enabled and address exists)
+    const newsEnabled = visitor.news_enabled !== '0' && visitor.news_enabled !== 0;
+    if (newsEnabled && visitor.address) {
+      try {
+        const city = extractCity(visitor.address as string);
+        if (city) {
+          const news = await getNewsForCity(city);
+          for (let i = 0; i < news.length; i++) {
+            const n = i + 1;
+            addProp(`news_${n}_title`, news[i].title);
+            addProp(`news_${n}_link`, news[i].link);
+            addProp(`news_${n}_source`, news[i].source);
+            addProp(`news_${n}_date`, news[i].date);
+          }
+        }
+      } catch (err) {
+        console.error('News fetch error:', err);
       }
     }
 

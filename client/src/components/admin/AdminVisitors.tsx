@@ -48,6 +48,7 @@ export default function AdminVisitors() {
         website: visitor.website || '',
         notes: visitor.notes || '',
         weather_enabled: visitor.weather_enabled ?? '1',
+        news_enabled: visitor.news_enabled ?? '1',
       });
     } catch (err) {
       console.error(err);
@@ -153,20 +154,34 @@ export default function AdminVisitors() {
           </div>
         </Card>
 
-        {/* Weather toggle */}
+        {/* Feature toggles */}
         <Card padding="md">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={editData.weather_enabled !== '0' && editData.weather_enabled !== 0}
-              onChange={(e) => setEditData(prev => ({ ...prev, weather_enabled: e.target.checked ? '1' : '0' }))}
-              className="w-5 h-5 accent-[#00A587]"
-            />
-            <div>
-              <p className="text-sm font-medium text-txt-primary">Wetterdaten aktiv</p>
-              <p className="text-xs text-txt-muted">Wetter für die Adresse dieses Besuchers im API-Call abrufen</p>
-            </div>
-          </label>
+          <div className="flex flex-col gap-4">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={editData.weather_enabled !== '0' && editData.weather_enabled !== 0}
+                onChange={(e) => setEditData(prev => ({ ...prev, weather_enabled: e.target.checked ? '1' : '0' }))}
+                className="w-5 h-5 accent-[#00A587]"
+              />
+              <div>
+                <p className="text-sm font-medium text-txt-primary">Wetterdaten aktiv</p>
+                <p className="text-xs text-txt-muted">Wetter für die Adresse dieses Besuchers im API-Call abrufen</p>
+              </div>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={editData.news_enabled !== '0' && editData.news_enabled !== 0}
+                onChange={(e) => setEditData(prev => ({ ...prev, news_enabled: e.target.checked ? '1' : '0' }))}
+                className="w-5 h-5 accent-[#00A587]"
+              />
+              <div>
+                <p className="text-sm font-medium text-txt-primary">News aktiv</p>
+                <p className="text-xs text-txt-muted">Top 5 lokale News für den Standort dieses Besuchers</p>
+              </div>
+            </label>
+          </div>
         </Card>
 
         {/* Assigned documents + contacts */}

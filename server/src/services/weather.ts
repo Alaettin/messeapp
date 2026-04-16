@@ -35,7 +35,7 @@ const WEATHER_CODES: Record<number, { de: string; en: string }> = {
   99: { de: 'Gewitter mit starkem Hagel', en: 'Thunderstorm with heavy hail' },
 };
 
-function extractCity(address: string): string {
+export function extractCity(address: string): string {
   // Split by comma, look for city (often after PLZ)
   const parts = address.split(',').map(p => p.trim());
 

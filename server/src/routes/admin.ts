@@ -219,19 +219,20 @@ router.get('/api/admin/visitors', async (req, res) => {
 
 router.put('/api/admin/visitors/:id', async (req, res) => {
   try {
-    const { name, company, position, address, email, phone, website, notes, weather_enabled } = req.body;
+    const { name, company, position, address, email, phone, website, notes, weather_enabled, news_enabled } = req.body;
 
     const visitor = await withDb((db) => {
       db.run(
         `UPDATE visitors SET
           name = ?, company = ?, position = ?, address = ?,
           email = ?, phone = ?, website = ?, notes = ?,
-          weather_enabled = ?,
+          weather_enabled = ?, news_enabled = ?,
           updated_at = datetime('now')
         WHERE id = ?`,
         [name ?? null, company ?? null, position ?? null, address ?? null,
          email ?? null, phone ?? null, website ?? null, notes ?? null,
          weather_enabled !== undefined ? (weather_enabled ? '1' : '0') : '1',
+         news_enabled !== undefined ? (news_enabled ? '1' : '0') : '1',
          req.params.id]
       );
       return resultToObjects(db.exec('SELECT * FROM visitors WHERE id = ?', [req.params.id]))[0];
