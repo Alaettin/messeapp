@@ -146,9 +146,12 @@ export default function AdminContacts() {
         </Card>
       ) : (
         <div className="flex flex-col gap-2">
-          {contacts.map(contact => (
+          {contacts.map((contact, index) => (
             <Card key={contact.id} padding="sm">
               <div className="flex items-center gap-3">
+                <span className="text-xs font-mono text-txt-muted bg-bg-surface px-2 py-1 rounded flex-shrink-0">
+                  #{index + 1}
+                </span>
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-medium truncate ${contact.active ? 'text-txt-primary' : 'text-txt-muted line-through'}`}>
                     {contact.name}

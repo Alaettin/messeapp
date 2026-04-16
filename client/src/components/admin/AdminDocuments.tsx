@@ -150,9 +150,12 @@ export default function AdminDocuments() {
         </Card>
       ) : (
         <div className="flex flex-col gap-2">
-          {documents.map(doc => (
+          {documents.map((doc, index) => (
             <Card key={doc.id} padding="sm">
               <div className="flex items-center gap-3">
+                <span className="text-xs font-mono text-txt-muted bg-bg-surface px-2 py-1 rounded flex-shrink-0">
+                  #{index + 1}
+                </span>
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-medium truncate ${doc.active ? 'text-txt-primary' : 'text-txt-muted line-through'}`}>
                     {doc.name}
