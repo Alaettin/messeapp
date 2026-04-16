@@ -27,14 +27,14 @@ export default function Admin() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium flex-1 justify-center transition-all ${
+            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2.5 rounded-md text-xs sm:text-sm font-medium flex-1 justify-center transition-all ${
               activeTab === tab.key
                 ? 'bg-accent text-white shadow-glow'
                 : 'text-txt-secondary hover:text-txt-primary'
             }`}
           >
             {tab.icon}
-            {tab.label}
+            <span className="hidden sm:inline">{tab.label}</span>
           </button>
         ))}
       </div>

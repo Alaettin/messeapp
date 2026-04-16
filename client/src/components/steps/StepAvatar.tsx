@@ -144,7 +144,10 @@ export default function StepAvatar({ identifier, onComplete }: StepAvatarProps) 
     setError(null);
     try {
       const result = await api.generateAvatar(identifier, selections, freeText);
-      setAvatarUrl(result.avatarUrl);
+      // Cache-bust: append timestamp so browser reloads the image
+      setAvatarUrl(`${result.avatarUrl}?t=${Date.now()}`);
+      // Scroll to top to show the avatar
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       console.error('Avatar generation error:', err);
       setError('Avatar-Generierung fehlgeschlagen. Bitte erneut versuchen.');
