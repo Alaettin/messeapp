@@ -27,6 +27,7 @@ export async function generateAvatar(
   if (selections.facial_hair && selections.facial_hair !== 'clean-shaven, no facial hair') {
     desc.push(`and ${selections.facial_hair}`);
   }
+  if (selections.eye_color) desc.push(`${selections.eye_color}`);
   if (selections.glasses && selections.glasses !== 'no glasses') {
     desc.push(`${selections.glasses}`);
   }
@@ -35,7 +36,7 @@ export async function generateAvatar(
   const personDescription = desc.join(', ');
   const extras = freeText.trim() ? ` ${freeText.trim()}.` : '';
 
-  const prompt = `A 3D rendered headshot of a ${personDescription}.${extras} The person is smiling warmly at the camera. Soft studio lighting, solid teal background color. Rendered in a warm, approachable 3D animation style similar to Disney or DreamWorks characters with smooth skin and expressive eyes. The image contains absolutely nothing else — no text, no icons, no shapes, no color palette, no swatches, no decorative elements, no borders, no frames anywhere in the image. Just the person on the plain background.`;
+  const prompt = `A 3D rendered headshot of a ${personDescription}.${extras} The person is smiling warmly at the camera. Soft studio lighting, solid teal background color. Rendered in a warm, approachable 3D animation style similar to Disney or DreamWorks characters with smooth skin and expressive eyes. The image must contain absolutely nothing else — no color palette, no Farbpalette, no swatches, no color dots, no text, no icons, no shapes, no decorative elements, no borders, no frames, no UI anywhere in the image. Just the person on the plain background, nothing else.`;
 
   const response = await getOpenAI().images.generate({
     model: 'dall-e-3',

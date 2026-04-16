@@ -97,6 +97,18 @@ const AVATAR_CONFIG: ConfigCategory[] = [
     ],
   },
   {
+    key: 'eye_color',
+    label: 'Augenfarbe',
+    emoji: '👁️',
+    options: [
+      { label: 'Braun', value: 'brown eyes' },
+      { label: 'Blau', value: 'blue eyes' },
+      { label: 'Grün', value: 'green eyes' },
+      { label: 'Grau', value: 'gray eyes' },
+      { label: 'Bernstein', value: 'amber eyes' },
+    ],
+  },
+  {
     key: 'clothing',
     label: 'Kleidung',
     emoji: '👔',
