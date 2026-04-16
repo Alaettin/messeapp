@@ -97,4 +97,19 @@ export function initializeDatabase(db: Database): void {
   for (const [key, value] of defaults) {
     db.run('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)', [key, value]);
   }
+
+  // Migrations: add columns if they don't exist yet
+  const migrations: [string, string][] = [
+    ['contacts', 'company'],
+    ['contacts', 'website'],
+    ['contacts', 'linkedin'],
+    ['contacts', 'notes'],
+  ];
+  for (const [table, column] of migrations) {
+    try {
+      db.run(`ALTER TABLE ${table} ADD COLUMN ${column} TEXT`);
+    } catch {
+      // Column already exists, ignore
+    }
+  }
 }
