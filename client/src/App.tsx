@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import AppShell from './components/layout/AppShell';
 import Capture from './pages/Capture';
 import Admin from './pages/Admin';
+import ApiDocs from './pages/ApiDocs';
 import Login from './pages/Login';
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -23,6 +24,7 @@ export default function App() {
       >
         <Route path="/" element={<Capture />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/api-docs" element={<ApiDocs />} />
       </Route>
     </Routes>
   );

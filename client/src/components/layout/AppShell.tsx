@@ -39,13 +39,13 @@ export default function AppShell() {
                 {username}
               </span>
             )}
-            <a
-              href="/docs.html"
+            <Link
+              to="/api-docs"
               className="p-2 text-txt-muted hover:text-txt-primary transition-colors"
               title="API Docs"
             >
               <BookOpen className="w-5 h-5" />
-            </a>
+            </Link>
             <Link
               to="/admin"
               className="p-2 text-txt-muted hover:text-txt-primary transition-colors"
