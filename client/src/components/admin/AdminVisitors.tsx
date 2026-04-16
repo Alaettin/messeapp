@@ -283,15 +283,6 @@ export default function AdminVisitors() {
         </div>
       )}
 
-      {deleteTarget && (
-        <ConfirmDialog
-          title="Besucher löschen"
-          message={`"${deleteTarget.name || deleteTarget.id}" wird unwiderruflich gelöscht, inklusive Avatar und Visitenkarte.`}
-          onConfirm={handleDeleteConfirm}
-          onCancel={() => setDeleteTarget(null)}
-          loading={deleting}
-        />
-      )}
     </div>
   );
 }
