@@ -164,16 +164,18 @@ router.post(`${API_BASE}/Product/:itemId/values`, async (req, res) => {
     addProp('notes', visitor.notes as string | null);
     addProp('created_at', visitor.created_at as string | null);
 
-    // Avatar (file)
+    // Avatar (image → inline Base64)
     const avatarPath = path.join('/data/storage/avatars', `${itemId}.png`);
     if (fs.existsSync(avatarPath)) {
-      addProp('avatar', `avatar_${itemId}`, { mimeType: 'image/png', filename: 'avatar', needsResolve: true });
+      const b64 = fs.readFileSync(avatarPath).toString('base64');
+      addProp('avatar', b64, { mimeType: 'image/png', filename: 'avatar', needsResolve: false });
     }
 
-    // Business card (file)
+    // Business card (image → inline Base64)
     const bcPath = path.join('/data/storage/business-cards', `${itemId}.jpg`);
     if (fs.existsSync(bcPath)) {
-      addProp('business_card', `bc_${itemId}`, { mimeType: 'image/jpeg', filename: 'business_card', needsResolve: true });
+      const b64 = fs.readFileSync(bcPath).toString('base64');
+      addProp('business_card', b64, { mimeType: 'image/jpeg', filename: 'business_card', needsResolve: false });
     }
 
     // Assigned documents (file + metadata)
