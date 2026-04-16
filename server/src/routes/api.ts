@@ -55,10 +55,15 @@ router.get(`${API_BASE}/model`, async (_req, res) => {
       { id: 'business_card', name: 'Visitenkarte', type: 1 },
     ];
 
-    // Dynamic: documents as file properties
+    // Dynamic: documents as file + metadata properties
     const docs = resultToObjects(db.exec('SELECT id, name FROM documents WHERE active = 1 ORDER BY sort_order, name'));
-    for (const doc of docs) {
-      model.push({ id: `document_${doc.id}`, name: doc.name as string, type: 1 });
+    for (let i = 0; i < docs.length; i++) {
+      const doc = docs[i];
+      const prefix = `document_${doc.id}`;
+      const label = `Dokument ${i + 1}`;
+      model.push({ id: `${prefix}_file`, name: `${label} - Datei`, type: 1 });
+      model.push({ id: `${prefix}_name`, name: `${label} - Anzeigename`, type: 0 });
+      model.push({ id: `${prefix}_category`, name: `${label} - Kategorie`, type: 0 });
     }
 
     // Dynamic: contacts as property groups
@@ -74,6 +79,7 @@ router.get(`${API_BASE}/model`, async (_req, res) => {
       model.push({ id: `${prefix}_phone`, name: `${label} - Telefon`, type: 0 });
       model.push({ id: `${prefix}_website`, name: `${label} - Website`, type: 0 });
       model.push({ id: `${prefix}_linkedin`, name: `${label} - LinkedIn`, type: 0 });
+      model.push({ id: `${prefix}_notes`, name: `${label} - Notizen`, type: 0 });
     }
 
     res.json(model);
@@ -170,22 +176,25 @@ router.post(`${API_BASE}/Product/:itemId/values`, async (req, res) => {
       addProp('business_card', `bc_${itemId}`, { mimeType: 'image/jpeg', filename: 'business_card', needsResolve: true });
     }
 
-    // Assigned documents (files)
+    // Assigned documents (file + metadata)
     const assignedDocs = resultToObjects(db.exec(
-      `SELECT d.id, d.name, d.file_path FROM documents d
+      `SELECT d.id, d.name, d.category, d.file_path FROM documents d
        JOIN visitor_documents vd ON d.id = vd.document_id
        WHERE vd.visitor_id = ?`, [itemId]
     ));
     for (const doc of assignedDocs) {
+      const prefix = `document_${doc.id}`;
       const ext = path.extname(doc.file_path as string).toLowerCase();
       const mime = ext === '.pdf' ? 'application/pdf'
         : ext === '.docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         : ext === '.xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         : 'application/octet-stream';
-      addProp(`document_${doc.id}`, `doc_${doc.id}`, { mimeType: mime, filename: doc.name as string, needsResolve: true });
+      addProp(`${prefix}_file`, `doc_${doc.id}`, { mimeType: mime, filename: doc.name as string, needsResolve: true });
+      addProp(`${prefix}_name`, doc.name as string | null);
+      addProp(`${prefix}_category`, doc.category as string | null);
     }
 
-    // Assigned contacts (text properties)
+    // Assigned contacts (text properties + notes)
     const assignedContacts = resultToObjects(db.exec(
       `SELECT c.* FROM contacts c
        JOIN visitor_contacts vc ON c.id = vc.contact_id
@@ -200,6 +209,7 @@ router.post(`${API_BASE}/Product/:itemId/values`, async (req, res) => {
       addProp(`${prefix}_phone`, c.phone as string | null);
       addProp(`${prefix}_website`, c.website as string | null);
       addProp(`${prefix}_linkedin`, c.linkedin as string | null);
+      addProp(`${prefix}_notes`, c.notes as string | null);
     }
 
     res.json(properties);
@@ -259,7 +269,7 @@ router.post(`${API_BASE}/Product/:itemId/documents`, async (req, res) => {
        WHERE vd.visitor_id = ?`, [itemId]
     ));
     for (const doc of assignedDocs) {
-      resolveFile(`document_${doc.id}`, doc.file_path as string, doc.name as string);
+      resolveFile(`document_${doc.id}_file`, doc.file_path as string, doc.name as string);
     }
 
     res.json(results);
