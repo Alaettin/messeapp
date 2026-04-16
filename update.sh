@@ -6,14 +6,13 @@ set -e
 
 echo "=== NeoPass Update ==="
 
-# 1. Backup der Datenbank
-VOLUME_PATH=$(docker volume inspect messepass-data --format '{{ .Mountpoint }}' 2>/dev/null || echo "")
-if [ -n "$VOLUME_PATH" ] && [ -f "$VOLUME_PATH/db/messepass.db" ]; then
+# 1. Backup der Datenbank aus dem Docker Volume
+CONTAINER=$(docker compose ps -q messepass 2>/dev/null || echo "")
+if [ -n "$CONTAINER" ]; then
     BACKUP="messepass-backup-$(date +%Y%m%d-%H%M%S).db"
-    cp "$VOLUME_PATH/db/messepass.db" "./$BACKUP"
-    echo "Backup erstellt: $BACKUP"
-else
-    echo "Kein bestehendes Volume gefunden — erster Start oder Volume-Name anders."
+    docker cp "$CONTAINER:/data/db/messepass.db" "./$BACKUP" 2>/dev/null && \
+        echo "Backup erstellt: $BACKUP" || \
+        echo "Keine bestehende DB gefunden — erster Start."
 fi
 
 # 2. Code aktualisieren
