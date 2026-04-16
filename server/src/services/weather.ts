@@ -3,35 +3,36 @@ import { getDb, withDb, getSetting } from '../db/index.js';
 export interface WeatherData {
   temperature: string;
   description: string;
+  description_en: string;
   humidity: string;
   wind: string;
   location: string;
 }
 
-const WEATHER_CODES: Record<number, string> = {
-  0: 'Klar',
-  1: 'Überwiegend klar',
-  2: 'Teilweise bewölkt',
-  3: 'Bewölkt',
-  45: 'Nebel',
-  48: 'Nebel mit Reif',
-  51: 'Leichter Nieselregen',
-  53: 'Nieselregen',
-  55: 'Starker Nieselregen',
-  61: 'Leichter Regen',
-  63: 'Regen',
-  65: 'Starker Regen',
-  71: 'Leichter Schneefall',
-  73: 'Schneefall',
-  75: 'Starker Schneefall',
-  80: 'Leichte Regenschauer',
-  81: 'Regenschauer',
-  82: 'Starke Regenschauer',
-  85: 'Leichte Schneeschauer',
-  86: 'Schneeschauer',
-  95: 'Gewitter',
-  96: 'Gewitter mit Hagel',
-  99: 'Gewitter mit starkem Hagel',
+const WEATHER_CODES: Record<number, { de: string; en: string }> = {
+  0: { de: 'Klar', en: 'Clear sky' },
+  1: { de: 'Überwiegend klar', en: 'Mainly clear' },
+  2: { de: 'Teilweise bewölkt', en: 'Partly cloudy' },
+  3: { de: 'Bewölkt', en: 'Overcast' },
+  45: { de: 'Nebel', en: 'Fog' },
+  48: { de: 'Nebel mit Reif', en: 'Depositing rime fog' },
+  51: { de: 'Leichter Nieselregen', en: 'Light drizzle' },
+  53: { de: 'Nieselregen', en: 'Moderate drizzle' },
+  55: { de: 'Starker Nieselregen', en: 'Dense drizzle' },
+  61: { de: 'Leichter Regen', en: 'Slight rain' },
+  63: { de: 'Regen', en: 'Moderate rain' },
+  65: { de: 'Starker Regen', en: 'Heavy rain' },
+  71: { de: 'Leichter Schneefall', en: 'Slight snowfall' },
+  73: { de: 'Schneefall', en: 'Moderate snowfall' },
+  75: { de: 'Starker Schneefall', en: 'Heavy snowfall' },
+  80: { de: 'Leichte Regenschauer', en: 'Slight rain showers' },
+  81: { de: 'Regenschauer', en: 'Moderate rain showers' },
+  82: { de: 'Starke Regenschauer', en: 'Violent rain showers' },
+  85: { de: 'Leichte Schneeschauer', en: 'Slight snow showers' },
+  86: { de: 'Schneeschauer', en: 'Heavy snow showers' },
+  95: { de: 'Gewitter', en: 'Thunderstorm' },
+  96: { de: 'Gewitter mit Hagel', en: 'Thunderstorm with hail' },
+  99: { de: 'Gewitter mit starkem Hagel', en: 'Thunderstorm with heavy hail' },
 };
 
 function extractCity(address: string): string {
@@ -120,9 +121,11 @@ export async function getWeatherForAddress(address: string): Promise<WeatherData
   const weather = await fetchWeather(geo.lat, geo.lon);
   if (!weather) return null;
 
+  const code = WEATHER_CODES[weather.weatherCode];
   const result: WeatherData = {
     temperature: `${weather.temperature}`,
-    description: WEATHER_CODES[weather.weatherCode] || `Code ${weather.weatherCode}`,
+    description: code?.de || `Code ${weather.weatherCode}`,
+    description_en: code?.en || `Code ${weather.weatherCode}`,
     humidity: `${weather.humidity}`,
     wind: `${weather.wind}`,
     location: geo.name,

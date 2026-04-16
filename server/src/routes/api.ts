@@ -85,7 +85,8 @@ router.get(`${API_BASE}/model`, async (_req, res) => {
 
     // Weather properties
     model.push({ id: 'weather_temperature', name: 'Wetter - Temperatur (°C)', type: 0 });
-    model.push({ id: 'weather_description', name: 'Wetter - Beschreibung', type: 0 });
+    model.push({ id: 'weather_description', name: 'Wetter - Beschreibung (DE)', type: 0 });
+    model.push({ id: 'weather_description_en', name: 'Wetter - Description (EN)', type: 0 });
     model.push({ id: 'weather_humidity', name: 'Wetter - Luftfeuchtigkeit (%)', type: 0 });
     model.push({ id: 'weather_wind', name: 'Wetter - Wind (km/h)', type: 0 });
     model.push({ id: 'weather_location', name: 'Wetter - Standort', type: 0 });
@@ -234,6 +235,7 @@ router.post(`${API_BASE}/Product/:itemId/values`, async (req, res) => {
         if (weather) {
           addProp('weather_temperature', weather.temperature);
           addProp('weather_description', weather.description);
+          addProp('weather_description_en', weather.description_en);
           addProp('weather_humidity', weather.humidity);
           addProp('weather_wind', weather.wind);
           addProp('weather_location', weather.location);
