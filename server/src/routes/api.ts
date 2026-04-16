@@ -247,7 +247,10 @@ router.post(`${API_BASE}/Product/:itemId/documents`, async (req, res) => {
 
     function resolveFile(propertyId: string, filePath: string, filename: string) {
       if (!wantAll && !requestedIds.includes(propertyId)) return;
-      if (!fs.existsSync(filePath)) return;
+      if (!filePath || !fs.existsSync(filePath)) {
+        console.warn(`Documents: file not found for ${propertyId}: ${filePath}`);
+        return;
+      }
       const buffer = fs.readFileSync(filePath);
       results.push({
         propertyId,
