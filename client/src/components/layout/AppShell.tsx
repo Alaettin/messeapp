@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { Settings, LogOut } from 'lucide-react';
+import { Settings, LogOut, BookOpen } from 'lucide-react';
 
 export default function AppShell() {
   const navigate = useNavigate();
@@ -39,6 +39,13 @@ export default function AppShell() {
                 {username}
               </span>
             )}
+            <a
+              href="/docs.html"
+              className="p-2 text-txt-muted hover:text-txt-primary transition-colors"
+              title="API Docs"
+            >
+              <BookOpen className="w-5 h-5" />
+            </a>
             <Link
               to="/admin"
               className="p-2 text-txt-muted hover:text-txt-primary transition-colors"

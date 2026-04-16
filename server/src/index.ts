@@ -8,6 +8,7 @@ import { getDb } from './db/index.js';
 import { authRouter, requireAuth } from './middleware/auth.js';
 import captureRouter from './routes/capture.js';
 import adminRouter from './routes/admin.js';
+import apiRouter from './routes/api.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
@@ -40,6 +41,9 @@ app.get('/api/health', (_req, res) => {
 
 // Static file serving for uploaded storage files (no auth — loaded via <img> tags)
 app.use('/api/storage', express.static('/data/storage'));
+
+// Connector API (no auth — public for external systems)
+app.use(apiRouter);
 
 // Auth routes (login, logout, me — no auth required)
 app.use(authRouter);
