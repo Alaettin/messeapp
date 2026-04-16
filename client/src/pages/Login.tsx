@@ -42,9 +42,8 @@ export default function Login() {
   return (
     <div className="min-h-[100dvh] flex items-center justify-center p-4 bg-bg-primary">
       <div className="w-full max-w-sm">
-        <div className="flex flex-col items-center gap-4 mb-8">
-          <img src="/neoception-logo.png" alt="Neoception" className="h-10" />
-          <h1 className="text-2xl font-semibold text-accent">Passport</h1>
+        <div className="flex flex-col items-center mb-8">
+          <img src="/logo.png" alt="Neoception Passport" className="h-12" />
         </div>
 
         <Card padding="lg">

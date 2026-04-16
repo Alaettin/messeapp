@@ -23,15 +23,12 @@ export default function AppShell() {
       {/* Top bar */}
       <header className="sticky top-0 z-50 bg-bg-primary border-b border-border">
         <div className="flex items-center justify-between h-14 px-4 max-w-2xl mx-auto">
-          <Link to="/" className="flex items-center gap-3">
+          <Link to="/" className="flex items-center">
             <img
-              src="/neoception-logo.png"
-              alt="Neoception"
-              className="h-7"
+              src="/logo.png"
+              alt="Neoception Passport"
+              className="h-8"
             />
-            <span className="text-lg font-semibold text-accent tracking-tight">
-              Passport
-            </span>
           </Link>
           <div className="flex items-center gap-1">
             {username && (
