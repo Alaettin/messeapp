@@ -39,18 +39,6 @@ const AVATAR_CONFIG: ConfigCategory[] = [
     ],
   },
   {
-    key: 'hair_color',
-    label: 'Haarfarbe',
-    emoji: '💇',
-    options: [
-      { label: 'Blond', value: 'blonde hair' },
-      { label: 'Braun', value: 'brown hair' },
-      { label: 'Schwarz', value: 'black hair' },
-      { label: 'Rot', value: 'red hair' },
-      { label: 'Grau / Weiß', value: 'gray or white hair' },
-    ],
-  },
-  {
     key: 'hair_style',
     label: 'Frisur',
     emoji: '✂️',
@@ -61,6 +49,18 @@ const AVATAR_CONFIG: ConfigCategory[] = [
       { label: 'Locken', value: 'curly hair' },
       { label: 'Zurückgekämmt', value: 'slicked-back hair' },
       { label: 'Glatze', value: 'bald head, no hair' },
+    ],
+  },
+  {
+    key: 'hair_color',
+    label: 'Haarfarbe',
+    emoji: '💇',
+    options: [
+      { label: 'Blond', value: 'blonde hair' },
+      { label: 'Braun', value: 'brown hair' },
+      { label: 'Schwarz', value: 'black hair' },
+      { label: 'Rot', value: 'red hair' },
+      { label: 'Grau / Weiß', value: 'gray or white hair' },
     ],
   },
   {
@@ -176,11 +176,7 @@ export default function StepAvatar({ identifier, onComplete }: StepAvatarProps) 
       )}
 
       {/* Configurator */}
-      {AVATAR_CONFIG.filter(category => {
-        // Hide hair color when bald is selected
-        if (category.key === 'hair_color' && selections.hair_style === 'bald head, no hair') return false;
-        return true;
-      }).map(category => (
+      {AVATAR_CONFIG.map(category => (
         <Card key={category.key} padding="md">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg">{category.emoji}</span>

@@ -7,41 +7,35 @@ export async function generateAvatar(
 ): Promise<{ prompt: string; imageBuffer: Buffer }> {
   const isBald = selections.hair_style === 'bald head, no hair';
 
-  const parts: string[] = [
-    'Create a single portrait of exactly one person.',
-    'Style: friendly, professional cartoon illustration, modern flat design, suitable as a profile picture.',
-    'Composition: head and shoulders only, centered, one face, no duplicates, no multiple views.',
-  ];
+  // Build person description
+  const desc: string[] = [];
 
-  // Gender & Age
-  if (selections.gender) parts.push(`The person is a ${selections.gender}.`);
-  if (selections.age) parts.push(`Age: ${selections.age}.`);
+  if (selections.gender) desc.push(selections.gender);
+  if (selections.age) desc.push(selections.age);
+  if (selections.build) desc.push(`with a ${selections.build}`);
 
-  // Hair
   if (isBald) {
-    parts.push('The person is completely bald with no hair at all.');
+    desc.push('who is completely bald with a smooth shiny head and no hair whatsoever');
   } else {
-    if (selections.hair_color) parts.push(`Hair color: ${selections.hair_color}.`);
-    if (selections.hair_style) parts.push(`Hairstyle: ${selections.hair_style}.`);
+    const hairParts: string[] = [];
+    if (selections.hair_color) hairParts.push(selections.hair_color);
+    if (selections.hair_style) hairParts.push(selections.hair_style);
+    if (hairParts.length > 0) desc.push(`with ${hairParts.join(', ')}`);
   }
 
-  // Face
-  if (selections.face_shape) parts.push(`Face shape: ${selections.face_shape}.`);
-  if (selections.facial_hair) parts.push(`Facial hair: ${selections.facial_hair}.`);
-  if (selections.glasses) parts.push(`${selections.glasses}.`);
-
-  // Body & Clothing
-  if (selections.build) parts.push(`Build: ${selections.build}.`);
-  if (selections.clothing) parts.push(`Clothing: ${selections.clothing}.`);
-
-  if (freeText.trim()) {
-    parts.push(`Additional details: ${freeText.trim()}.`);
+  if (selections.face_shape) desc.push(`a ${selections.face_shape}`);
+  if (selections.facial_hair && selections.facial_hair !== 'clean-shaven, no facial hair') {
+    desc.push(`and ${selections.facial_hair}`);
   }
+  if (selections.glasses && selections.glasses !== 'no glasses') {
+    desc.push(`${selections.glasses}`);
+  }
+  if (selections.clothing) desc.push(`${selections.clothing}`);
 
-  parts.push('Background: soft teal gradient (#00A587).');
-  parts.push('Important: Show only ONE person, no collage, no multiple angles, no split views.');
+  const personDescription = desc.join(', ');
+  const extras = freeText.trim() ? ` ${freeText.trim()}.` : '';
 
-  const prompt = parts.join(' ');
+  const prompt = `A 3D rendered headshot of a ${personDescription}.${extras} The person is smiling warmly at the camera. Soft studio lighting, solid teal background color. Rendered in a warm, approachable 3D animation style similar to Disney or DreamWorks characters with smooth skin and expressive eyes. The image contains absolutely nothing else — no text, no icons, no shapes, no color palette, no swatches, no decorative elements, no borders, no frames anywhere in the image. Just the person on the plain background.`;
 
   const response = await getOpenAI().images.generate({
     model: 'dall-e-3',
