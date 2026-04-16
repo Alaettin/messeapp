@@ -76,4 +76,21 @@ export function initializeDatabase(db: Database): void {
       sort_order INTEGER DEFAULT 0
     )
   `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )
+  `);
+
+  // Default settings
+  const defaults: [string, string][] = [
+    ['ocr_timeout', '30'],
+    ['avatar_timeout', '60'],
+    ['avatar_download_timeout', '30'],
+  ];
+  for (const [key, value] of defaults) {
+    db.run('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)', [key, value]);
+  }
 }

@@ -7,12 +7,35 @@ const dbPath = process.env.DB_PATH || path.join('/data', 'db', 'messepass.db');
 
 let db: Database;
 
+// Simple mutex for serializing DB access
+let lockQueue: (() => void)[] = [];
+let locked = false;
+
+function acquireLock(): Promise<void> {
+  return new Promise<void>((resolve) => {
+    if (!locked) {
+      locked = true;
+      resolve();
+    } else {
+      lockQueue.push(resolve);
+    }
+  });
+}
+
+function releaseLock(): void {
+  const next = lockQueue.shift();
+  if (next) {
+    next();
+  } else {
+    locked = false;
+  }
+}
+
 export async function getDb(): Promise<Database> {
   if (db) return db;
 
   const SQL = await initSqlJs();
 
-  // Load existing database file if it exists
   if (fs.existsSync(dbPath)) {
     const buffer = fs.readFileSync(dbPath);
     db = new SQL.Database(buffer);
@@ -35,4 +58,31 @@ export function saveDb(): void {
   fs.writeFileSync(dbPath, Buffer.from(data));
 }
 
-export default { getDb, saveDb };
+/**
+ * Execute a function with exclusive DB access.
+ * Serializes all writes — safe for concurrent requests.
+ * Automatically saves to disk after the function completes.
+ */
+export async function withDb<T>(fn: (db: Database) => T | Promise<T>): Promise<T> {
+  await acquireLock();
+  try {
+    const database = await getDb();
+    const result = await fn(database);
+    saveDb();
+    return result;
+  } finally {
+    releaseLock();
+  }
+}
+
+export async function getSetting(key: string, fallback: number): Promise<number> {
+  const database = await getDb();
+  const result = database.exec('SELECT value FROM settings WHERE key = ?', [key]);
+  if (result.length > 0 && result[0].values.length > 0) {
+    const val = Number(result[0].values[0][0]);
+    return isNaN(val) ? fallback : val;
+  }
+  return fallback;
+}
+
+export default { getDb, saveDb, withDb, getSetting };

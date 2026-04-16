@@ -1,4 +1,5 @@
 import { getOpenAI } from './openai.js';
+import { getSetting } from '../db/index.js';
 
 export async function generateAvatar(
   selections: Record<string, string>,
@@ -40,15 +41,16 @@ export async function generateAvatar(
     size: '1024x1024',
     quality: 'standard',
     n: 1,
-  });
+  }, { timeout: await getSetting('avatar_timeout', 60) * 1000 });
 
   const imageUrl = response.data?.[0]?.url;
   if (!imageUrl) {
     throw new Error('DALL-E returned no image URL');
   }
 
-  // Download the temporary URL immediately
-  const imageResponse = await fetch(imageUrl);
+  // Download the temporary URL immediately (30s timeout)
+  const dlTimeout = await getSetting('avatar_download_timeout', 30) * 1000;
+  const imageResponse = await fetch(imageUrl, { signal: AbortSignal.timeout(dlTimeout) });
   if (!imageResponse.ok) {
     throw new Error(`Failed to download avatar image: ${imageResponse.status}`);
   }

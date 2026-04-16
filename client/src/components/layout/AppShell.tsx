@@ -1,7 +1,23 @@
-import { Outlet, Link } from 'react-router-dom';
-import { Settings } from 'lucide-react';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Settings, LogOut } from 'lucide-react';
 
 export default function AppShell() {
+  const navigate = useNavigate();
+  const username = localStorage.getItem('auth_user');
+
+  function handleLogout() {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      fetch('/api/logout', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
+    }
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+    navigate('/login', { replace: true });
+  }
+
   return (
     <div className="flex flex-col min-h-[100dvh]">
       {/* Top bar */}
@@ -17,12 +33,27 @@ export default function AppShell() {
               Passport
             </span>
           </Link>
-          <Link
-            to="/admin"
-            className="p-2 text-txt-muted hover:text-txt-primary transition-colors"
-          >
-            <Settings className="w-5 h-5" />
-          </Link>
+          <div className="flex items-center gap-1">
+            {username && (
+              <span className="px-3 py-1 rounded-full bg-accent/10 border border-accent/30 text-sm font-medium text-accent mr-2">
+                {username}
+              </span>
+            )}
+            <Link
+              to="/admin"
+              className="p-2 text-txt-muted hover:text-txt-primary transition-colors"
+              title="Backoffice"
+            >
+              <Settings className="w-5 h-5" />
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="p-2 text-txt-muted hover:text-error transition-colors"
+              title="Abmelden"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </header>
 

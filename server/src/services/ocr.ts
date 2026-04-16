@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { getOpenAI } from './openai.js';
+import { getSetting } from '../db/index.js';
 
 export interface OcrResult {
   name: string | null;
@@ -59,7 +60,7 @@ Gib NUR das JSON zurück, keine weiteren Erklärungen. Felder die nicht erkennba
       },
     ],
     max_tokens: 500,
-  });
+  }, { timeout: await getSetting('ocr_timeout', 30) * 1000 });
 
   const text = response.choices[0]?.message?.content?.trim() ?? '';
 

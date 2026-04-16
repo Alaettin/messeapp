@@ -94,7 +94,7 @@ export default function AdminVisitors() {
   // Detail view
   if (selectedVisitor) {
     return (
-      <div className="flex flex-col gap-4">
+      <><div className="flex flex-col gap-4">
         <Button variant="ghost" onClick={() => setSelectedVisitor(null)} className="self-start">
           <ArrowLeft className="w-4 h-4" /> Zurück zur Liste
         </Button>
@@ -183,6 +183,16 @@ export default function AdminVisitors() {
           </Button>
         </div>
       </div>
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Besucher löschen"
+          message={`"${deleteTarget.name || deleteTarget.id}" wird unwiderruflich gelöscht, inklusive Avatar und Visitenkarte.`}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeleteTarget(null)}
+          loading={deleting}
+        />
+      )}
+      </>
     );
   }
 

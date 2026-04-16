@@ -1,7 +1,25 @@
 import type { Visitor, Document, Contact, AvatarOption, OcrResult, VisitorFull } from '../types';
 
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem('auth_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`/api${path}`, options);
+  const headers = {
+    ...getAuthHeaders(),
+    ...options?.headers,
+  };
+
+  const res = await fetch(`/api${path}`, { ...options, headers });
+
+  if (res.status === 401) {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+    window.location.href = '/login';
+    throw new Error('Sitzung abgelaufen');
+  }
+
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(text || `API error: ${res.status}`);
@@ -127,5 +145,16 @@ export const api = {
   },
   adminDeleteVisitor(id: string) {
     return request<{ success: boolean }>(`/admin/visitors/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  },
+
+  adminGetSettings() {
+    return request<{ settings: Record<string, string> }>('/admin/settings');
+  },
+  adminUpdateSettings(data: Record<string, string>) {
+    return request<{ success: boolean }>('/admin/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
   },
 };

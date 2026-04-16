@@ -5,6 +5,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { getDb } from './db/index.js';
+import { authRouter, requireAuth } from './middleware/auth.js';
 import captureRouter from './routes/capture.js';
 import adminRouter from './routes/admin.js';
 
@@ -29,16 +30,22 @@ await getDb();
 const app = express();
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
-// Health check
+// Health check (no auth)
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Static file serving for uploaded storage files
+// Static file serving for uploaded storage files (no auth — loaded via <img> tags)
 app.use('/api/storage', express.static('/data/storage'));
+
+// Auth routes (login, logout, me — no auth required)
+app.use(authRouter);
+
+// All routes below require auth
+app.use('/api', requireAuth);
 
 // Capture workflow routes
 app.use(captureRouter);
@@ -54,6 +61,20 @@ if (fs.existsSync(clientDist)) {
     res.sendFile(path.join(clientDist, 'index.html'));
   });
 }
+
+// Global error handler
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Interner Serverfehler' });
+});
+
+// Process-level error handlers
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled rejection:', reason);
+});
 
 app.listen(PORT, () => {
   console.log(`NeoPass server running on port ${PORT}`);

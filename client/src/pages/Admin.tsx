@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { FileText, Users, UserSearch } from 'lucide-react';
+import { FileText, Users, UserSearch, Settings } from 'lucide-react';
 import AdminDocuments from '../components/admin/AdminDocuments';
 import AdminContacts from '../components/admin/AdminContacts';
 import AdminVisitors from '../components/admin/AdminVisitors';
+import AdminSettings from '../components/admin/AdminSettings';
 
-type Tab = 'documents' | 'contacts' | 'visitors';
+type Tab = 'documents' | 'contacts' | 'visitors' | 'settings';
 
 const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
   { key: 'documents', label: 'Dokumente', icon: <FileText className="w-4 h-4" /> },
   { key: 'contacts', label: 'Kontakte', icon: <Users className="w-4 h-4" /> },
   { key: 'visitors', label: 'Besucher', icon: <UserSearch className="w-4 h-4" /> },
+  { key: 'settings', label: 'Einstellungen', icon: <Settings className="w-4 h-4" /> },
 ];
 
 export default function Admin() {
@@ -41,6 +43,7 @@ export default function Admin() {
       {activeTab === 'documents' && <AdminDocuments />}
       {activeTab === 'contacts' && <AdminContacts />}
       {activeTab === 'visitors' && <AdminVisitors />}
+      {activeTab === 'settings' && <AdminSettings />}
     </div>
   );
 }
