@@ -58,9 +58,9 @@ router.get(`${API_BASE}/model`, async (_req, res) => {
     // Dynamic: documents as file + metadata properties
     const docs = resultToObjects(db.exec('SELECT id, name FROM documents WHERE active = 1 ORDER BY sort_order, name'));
     for (let i = 0; i < docs.length; i++) {
-      const doc = docs[i];
-      const prefix = `document_${doc.id}`;
-      const label = `Dokument ${i + 1}`;
+      const n = i + 1;
+      const prefix = `document_${n}`;
+      const label = `Dokument ${n}`;
       model.push({ id: `${prefix}_file`, name: `${label} - Datei`, type: 1 });
       model.push({ id: `${prefix}_name`, name: `${label} - Anzeigename`, type: 0 });
       model.push({ id: `${prefix}_category`, name: `${label} - Kategorie`, type: 0 });
@@ -69,9 +69,9 @@ router.get(`${API_BASE}/model`, async (_req, res) => {
     // Dynamic: contacts as property groups
     const contacts = resultToObjects(db.exec('SELECT id, name FROM contacts WHERE active = 1 ORDER BY sort_order, name'));
     for (let i = 0; i < contacts.length; i++) {
-      const c = contacts[i];
-      const prefix = `contact_${c.id}`;
-      const label = `Ansprechpartner ${i + 1}`;
+      const n = i + 1;
+      const prefix = `contact_${n}`;
+      const label = `Ansprechpartner ${n}`;
       model.push({ id: `${prefix}_name`, name: `${label} - Name`, type: 0 });
       model.push({ id: `${prefix}_company`, name: `${label} - Firma`, type: 0 });
       model.push({ id: `${prefix}_role`, name: `${label} - Rolle`, type: 0 });
@@ -178,32 +178,36 @@ router.post(`${API_BASE}/Product/:itemId/values`, async (req, res) => {
       addProp('business_card', b64, { mimeType: 'image/jpeg', filename: 'business_card', needsResolve: false });
     }
 
-    // Assigned documents (file + metadata)
+    // Assigned documents (file + metadata) — numbered from 1
     const assignedDocs = resultToObjects(db.exec(
       `SELECT d.id, d.name, d.category, d.file_path FROM documents d
        JOIN visitor_documents vd ON d.id = vd.document_id
        WHERE vd.visitor_id = ?`, [itemId]
     ));
-    for (const doc of assignedDocs) {
-      const prefix = `document_${doc.id}`;
+    for (let i = 0; i < assignedDocs.length; i++) {
+      const doc = assignedDocs[i];
+      const n = i + 1;
+      const prefix = `document_${n}`;
       const ext = path.extname(doc.file_path as string).toLowerCase();
       const mime = ext === '.pdf' ? 'application/pdf'
         : ext === '.docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         : ext === '.xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         : 'application/octet-stream';
-      addProp(`${prefix}_file`, `doc_${doc.id}`, { mimeType: mime, filename: doc.name as string, needsResolve: true });
+      addProp(`${prefix}_file`, `doc_${n}`, { mimeType: mime, filename: doc.name as string, needsResolve: true });
       addProp(`${prefix}_name`, doc.name as string | null);
       addProp(`${prefix}_category`, doc.category as string | null);
     }
 
-    // Assigned contacts (text properties + notes)
+    // Assigned contacts (text properties + notes) — numbered from 1
     const assignedContacts = resultToObjects(db.exec(
       `SELECT c.* FROM contacts c
        JOIN visitor_contacts vc ON c.id = vc.contact_id
        WHERE vc.visitor_id = ? ORDER BY c.sort_order, c.name`, [itemId]
     ));
-    for (const c of assignedContacts) {
-      const prefix = `contact_${c.id}`;
+    for (let i = 0; i < assignedContacts.length; i++) {
+      const c = assignedContacts[i];
+      const n = i + 1;
+      const prefix = `contact_${n}`;
       addProp(`${prefix}_name`, c.name as string | null);
       addProp(`${prefix}_company`, c.company as string | null);
       addProp(`${prefix}_role`, c.role as string | null);
@@ -267,14 +271,15 @@ router.post(`${API_BASE}/Product/:itemId/documents`, async (req, res) => {
     // Business card
     resolveFile(`bc_${itemId}`, path.join('/data/storage/business-cards', `${itemId}.jpg`), 'business_card');
 
-    // Assigned documents — propertyId here = the "value" from /values call
+    // Assigned documents — propertyId = "doc_N" (value from /values call), numbered from 1
     const assignedDocs = resultToObjects(db.exec(
       `SELECT d.id, d.name, d.file_path FROM documents d
        JOIN visitor_documents vd ON d.id = vd.document_id
        WHERE vd.visitor_id = ?`, [itemId]
     ));
-    for (const doc of assignedDocs) {
-      resolveFile(`doc_${doc.id}`, doc.file_path as string, doc.name as string);
+    for (let i = 0; i < assignedDocs.length; i++) {
+      const doc = assignedDocs[i];
+      resolveFile(`doc_${i + 1}`, doc.file_path as string, doc.name as string);
     }
 
     res.json(results);
