@@ -93,6 +93,7 @@ export function initializeDatabase(db: Database): void {
     ['ocr_timeout', '30'],
     ['avatar_timeout', '60'],
     ['avatar_download_timeout', '30'],
+    ['weather_cache_minutes', '30'],
   ];
   for (const [key, value] of defaults) {
     db.run('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)', [key, value]);
@@ -104,6 +105,7 @@ export function initializeDatabase(db: Database): void {
     ['contacts', 'website'],
     ['contacts', 'linkedin'],
     ['contacts', 'notes'],
+    ['visitors', 'weather_enabled'],
   ];
   for (const [table, column] of migrations) {
     try {
@@ -112,4 +114,16 @@ export function initializeDatabase(db: Database): void {
       // Column already exists, ignore
     }
   }
+
+  // Set default for weather_enabled (NULL → 1)
+  db.run("UPDATE visitors SET weather_enabled = '1' WHERE weather_enabled IS NULL");
+
+  // Weather cache table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS weather_cache (
+      address TEXT PRIMARY KEY,
+      data TEXT NOT NULL,
+      fetched_at DATETIME DEFAULT (datetime('now'))
+    )
+  `);
 }

@@ -11,6 +11,7 @@ export interface Visitor {
   avatar_path: string | null;
   avatar_prompt: string | null;
   notes: string | null;
+  weather_enabled: string | number | null;
   created_at: string;
   updated_at: string;
 }

@@ -7,6 +7,7 @@ export default function AdminSettings() {
   const [ocrTimeout, setOcrTimeout] = useState('30');
   const [avatarTimeout, setAvatarTimeout] = useState('60');
   const [downloadTimeout, setDownloadTimeout] = useState('30');
+  const [weatherCache, setWeatherCache] = useState('30');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -19,6 +20,7 @@ export default function AdminSettings() {
         if (s.ocr_timeout) setOcrTimeout(s.ocr_timeout);
         if (s.avatar_timeout) setAvatarTimeout(s.avatar_timeout);
         if (s.avatar_download_timeout) setDownloadTimeout(s.avatar_download_timeout);
+        if (s.weather_cache_minutes) setWeatherCache(s.weather_cache_minutes);
       })
       .catch(err => {
         console.error(err);
@@ -36,6 +38,7 @@ export default function AdminSettings() {
         ocr_timeout: ocrTimeout,
         avatar_timeout: avatarTimeout,
         avatar_download_timeout: downloadTimeout,
+        weather_cache_minutes: weatherCache,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -103,6 +106,19 @@ export default function AdminSettings() {
             helperText="Maximale Wartezeit für den Download des generierten Bildes"
           />
         </div>
+      </Card>
+
+      <Card padding="md">
+        <h3 className="font-semibold text-txt-primary mb-4">Wetter</h3>
+        <Input
+          label="Wetter-Cache (in Minuten)"
+          type="number"
+          min="1"
+          max="1440"
+          value={weatherCache}
+          onChange={(e) => setWeatherCache(e.target.value)}
+          helperText="Wie lange Wetterdaten pro Adresse gecached werden"
+        />
       </Card>
 
       <Button fullWidth onClick={handleSave} loading={saving}>

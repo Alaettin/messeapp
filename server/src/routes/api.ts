@@ -2,6 +2,7 @@ import { Router } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { getDb } from '../db/index.js';
+import { getWeatherForAddress } from '../services/weather.js';
 
 const router = Router();
 const API_BASE = '/api/connector';
@@ -81,6 +82,13 @@ router.get(`${API_BASE}/model`, async (_req, res) => {
       model.push({ id: `${prefix}_linkedin`, name: `${label} - LinkedIn`, type: 0 });
       model.push({ id: `${prefix}_notes`, name: `${label} - Notizen`, type: 0 });
     }
+
+    // Weather properties
+    model.push({ id: 'weather_temperature', name: 'Wetter - Temperatur (°C)', type: 0 });
+    model.push({ id: 'weather_description', name: 'Wetter - Beschreibung', type: 0 });
+    model.push({ id: 'weather_humidity', name: 'Wetter - Luftfeuchtigkeit (%)', type: 0 });
+    model.push({ id: 'weather_wind', name: 'Wetter - Wind (km/h)', type: 0 });
+    model.push({ id: 'weather_location', name: 'Wetter - Standort', type: 0 });
 
     res.json(model);
   } catch (err) {
@@ -216,6 +224,23 @@ router.post(`${API_BASE}/Product/:itemId/values`, async (req, res) => {
       addProp(`${prefix}_website`, c.website as string | null);
       addProp(`${prefix}_linkedin`, c.linkedin as string | null);
       addProp(`${prefix}_notes`, c.notes as string | null);
+    }
+
+    // Weather data (if enabled and address exists)
+    const weatherEnabled = visitor.weather_enabled !== '0' && visitor.weather_enabled !== 0;
+    if (weatherEnabled && visitor.address) {
+      try {
+        const weather = await getWeatherForAddress(visitor.address as string);
+        if (weather) {
+          addProp('weather_temperature', weather.temperature);
+          addProp('weather_description', weather.description);
+          addProp('weather_humidity', weather.humidity);
+          addProp('weather_wind', weather.wind);
+          addProp('weather_location', weather.location);
+        }
+      } catch (err) {
+        console.error('Weather fetch error:', err);
+      }
     }
 
     res.json(properties);

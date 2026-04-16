@@ -47,6 +47,7 @@ export default function AdminVisitors() {
         phone: visitor.phone || '',
         website: visitor.website || '',
         notes: visitor.notes || '',
+        weather_enabled: visitor.weather_enabled ?? '1',
       });
     } catch (err) {
       console.error(err);
@@ -150,6 +151,22 @@ export default function AdminVisitors() {
               />
             </div>
           </div>
+        </Card>
+
+        {/* Weather toggle */}
+        <Card padding="md">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={editData.weather_enabled !== '0' && editData.weather_enabled !== 0}
+              onChange={(e) => setEditData(prev => ({ ...prev, weather_enabled: e.target.checked ? '1' : '0' }))}
+              className="w-5 h-5 accent-[#00A587]"
+            />
+            <div>
+              <p className="text-sm font-medium text-txt-primary">Wetterdaten aktiv</p>
+              <p className="text-xs text-txt-muted">Wetter für die Adresse dieses Besuchers im API-Call abrufen</p>
+            </div>
+          </label>
         </Card>
 
         {/* Assigned documents + contacts */}
