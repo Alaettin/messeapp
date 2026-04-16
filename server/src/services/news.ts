@@ -72,7 +72,7 @@ export async function getNewsForCity(city: string): Promise<NewsItem[]> {
 
   // Fetch from Google News RSS
   try {
-    const url = `https://news.google.com/rss?hl=en&gl=US&ceid=US:en&geo=${encodeURIComponent(city)}`;
+    const url = `https://news.google.com/rss?geo=${encodeURIComponent(city)}`;
     const res = await fetch(url, { signal: AbortSignal.timeout(10_000) });
     if (!res.ok) {
       console.error(`News RSS error: ${res.status}`);
