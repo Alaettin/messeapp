@@ -262,19 +262,19 @@ router.post(`${API_BASE}/Product/:itemId/documents`, async (req, res) => {
     }
 
     // Avatar
-    resolveFile('avatar', path.join('/data/storage/avatars', `${itemId}.png`), 'avatar');
+    resolveFile(`avatar_${itemId}`, path.join('/data/storage/avatars', `${itemId}.png`), 'avatar');
 
     // Business card
-    resolveFile('business_card', path.join('/data/storage/business-cards', `${itemId}.jpg`), 'business_card');
+    resolveFile(`bc_${itemId}`, path.join('/data/storage/business-cards', `${itemId}.jpg`), 'business_card');
 
-    // Assigned documents
+    // Assigned documents — propertyId here = the "value" from /values call
     const assignedDocs = resultToObjects(db.exec(
       `SELECT d.id, d.name, d.file_path FROM documents d
        JOIN visitor_documents vd ON d.id = vd.document_id
        WHERE vd.visitor_id = ?`, [itemId]
     ));
     for (const doc of assignedDocs) {
-      resolveFile(`document_${doc.id}_file`, doc.file_path as string, doc.name as string);
+      resolveFile(`doc_${doc.id}`, doc.file_path as string, doc.name as string);
     }
 
     res.json(results);
