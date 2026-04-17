@@ -73,7 +73,9 @@ export async function getNewsForCity(city: string): Promise<NewsItem[]> {
   // Fetch from Google News RSS (search by city name for local results)
   try {
     console.log(`News: fetching for city "${city}"`);
-    const url = `https://news.google.com/rss/search?q=${encodeURIComponent(city)}&hl=en`;
+    // Exact phrase match + last 7 days for more relevant results
+    const query = `"${city}" when:7d`;
+    const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en`;
     const res = await fetch(url, { signal: AbortSignal.timeout(10_000) });
     if (!res.ok) {
       console.error(`News RSS error: ${res.status}`);
