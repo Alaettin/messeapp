@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Trash2, Upload, Eye, EyeOff } from 'lucide-react';
+import { Plus, Trash2, Upload, Eye, EyeOff, Pencil, X } from 'lucide-react';
 import { Button, Card, Input, ConfirmDialog } from '../ui';
 import { api } from '../../services/api';
 import type { Document } from '../../types';
@@ -8,6 +8,7 @@ export default function AdminDocuments() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Document | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [formName, setFormName] = useState('');
@@ -31,20 +32,39 @@ export default function AdminDocuments() {
     }
   }
 
-  async function handleCreate() {
-    if (!formFile) return;
+  function resetForm() {
+    setFormName('');
+    setFormCategory('');
+    setFormFile(null);
+    setEditingId(null);
+    setShowForm(false);
+  }
+
+  function startEdit(doc: Document) {
+    setFormName(doc.name);
+    setFormCategory(doc.category || '');
+    setFormFile(null);
+    setEditingId(doc.id);
+    setShowForm(true);
+  }
+
+  async function handleSubmit() {
     setSaving(true);
     setError(null);
     try {
-      await api.adminCreateDocument(formFile, formName || formFile.name, formCategory);
-      setShowForm(false);
-      setFormName('');
-      setFormCategory('');
-      setFormFile(null);
+      if (editingId) {
+        // Edit: only update name + category
+        await api.adminUpdateDocument(editingId, { name: formName, category: formCategory });
+      } else {
+        // Create: file required
+        if (!formFile) { setSaving(false); return; }
+        await api.adminCreateDocument(formFile, formName || formFile.name, formCategory);
+      }
+      resetForm();
       await loadDocuments();
     } catch (err) {
       console.error(err);
-      setError('Fehler beim Hochladen.');
+      setError(editingId ? 'Fehler beim Speichern.' : 'Fehler beim Hochladen.');
     } finally {
       setSaving(false);
     }
@@ -93,34 +113,36 @@ export default function AdminDocuments() {
         </div>
       )}
 
-      <Button onClick={() => setShowForm(!showForm)}>
+      <Button onClick={() => { resetForm(); setShowForm(!showForm); }}>
         <Plus className="w-4 h-4" /> Neues Dokument
       </Button>
 
       {showForm && (
         <Card padding="md">
           <div className="flex flex-col gap-3">
-            <div>
-              <input
-                ref={fileRef}
-                type="file"
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
-                onChange={(e) => {
-                  const f = e.target.files?.[0] || null;
-                  setFormFile(f);
-                  if (f && !formName) setFormName(f.name.replace(/\.[^.]+$/, ''));
-                }}
-                className="hidden"
-              />
-              <Button
-                variant="secondary"
-                fullWidth
-                onClick={() => fileRef.current?.click()}
-              >
-                <Upload className="w-4 h-4" />
-                {formFile ? formFile.name : 'Datei auswählen'}
-              </Button>
-            </div>
+            {!editingId && (
+              <div>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] || null;
+                    setFormFile(f);
+                    if (f && !formName) setFormName(f.name.replace(/\.[^.]+$/, ''));
+                  }}
+                  className="hidden"
+                />
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  onClick={() => fileRef.current?.click()}
+                >
+                  <Upload className="w-4 h-4" />
+                  {formFile ? formFile.name : 'Datei auswählen'}
+                </Button>
+              </div>
+            )}
             <Input
               label="Anzeigename"
               value={formName}
@@ -133,11 +155,11 @@ export default function AdminDocuments() {
               placeholder="z.B. Produktinfo, Datenblatt"
             />
             <div className="flex gap-2">
-              <Button variant="ghost" fullWidth onClick={() => setShowForm(false)}>
+              <Button variant="ghost" fullWidth onClick={resetForm}>
                 Abbrechen
               </Button>
-              <Button fullWidth onClick={handleCreate} loading={saving} disabled={!formFile}>
-                Hochladen
+              <Button fullWidth onClick={handleSubmit} loading={saving} disabled={!editingId && !formFile}>
+                {editingId ? 'Speichern' : 'Hochladen'}
               </Button>
             </div>
           </div>
@@ -167,6 +189,13 @@ export default function AdminDocuments() {
                     <span className="text-xs text-txt-muted">{doc.filename}</span>
                   </div>
                 </div>
+                <button
+                  onClick={() => editingId === doc.id ? resetForm() : startEdit(doc)}
+                  className="p-2 rounded-lg text-txt-muted hover:text-txt-primary hover:bg-bg-surface transition-colors"
+                  title="Bearbeiten"
+                >
+                  {editingId === doc.id ? <X className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
+                </button>
                 <button
                   onClick={() => handleToggleActive(doc)}
                   className={`p-2 rounded-lg transition-colors ${

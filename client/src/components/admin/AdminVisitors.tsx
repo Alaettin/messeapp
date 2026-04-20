@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Search, Trash2, ArrowLeft, Save, Building2, Mail, Phone, Globe, MapPin, Briefcase, StickyNote } from 'lucide-react';
+import { Search, Trash2, ArrowLeft, Save, Building2, Mail, FileText, Users, Check, User } from 'lucide-react';
 import { Button, Card, Input, ConfirmDialog } from '../ui';
 import { api } from '../../services/api';
-import type { Visitor, VisitorFull } from '../../types';
+import type { Visitor, VisitorFull, Document, Contact } from '../../types';
 
 export default function AdminVisitors() {
   const [visitors, setVisitors] = useState<Visitor[]>([]);
@@ -12,6 +12,10 @@ export default function AdminVisitors() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string | null } | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [editData, setEditData] = useState<Partial<Visitor>>({});
+  const [allDocuments, setAllDocuments] = useState<Document[]>([]);
+  const [allContacts, setAllContacts] = useState<Contact[]>([]);
+  const [selectedDocIds, setSelectedDocIds] = useState<Set<number>>(new Set());
+  const [selectedContactIds, setSelectedContactIds] = useState<Set<number>>(new Set());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,8 +40,16 @@ export default function AdminVisitors() {
 
   async function openDetail(id: string) {
     try {
-      const visitor = await api.getVisitor(id);
+      const [visitor, docsResult, contactsResult] = await Promise.all([
+        api.getVisitor(id),
+        api.adminGetDocuments(),
+        api.adminGetContacts(),
+      ]);
       setSelectedVisitor(visitor);
+      setAllDocuments(docsResult.documents);
+      setAllContacts(contactsResult.contacts);
+      setSelectedDocIds(new Set(visitor.documents.map(d => d.id)));
+      setSelectedContactIds(new Set(visitor.contacts.map(c => c.id)));
       setEditData({
         name: visitor.name || '',
         company: visitor.company || '',
@@ -56,12 +68,29 @@ export default function AdminVisitors() {
     }
   }
 
+  function toggleDoc(id: number) {
+    setSelectedDocIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleContact(id: number) {
+    setSelectedContactIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
   async function handleSave() {
     if (!selectedVisitor) return;
     setSaving(true);
     setError(null);
     try {
       await api.adminUpdateVisitor(selectedVisitor.id, editData);
+      await api.saveSelections(selectedVisitor.id, [...selectedDocIds], [...selectedContactIds]);
       await openDetail(selectedVisitor.id);
     } catch (err) {
       console.error(err);
@@ -184,23 +213,91 @@ export default function AdminVisitors() {
           </div>
         </Card>
 
-        {/* Assigned documents + contacts */}
-        {selectedVisitor.documents.length > 0 && (
-          <Card padding="md">
-            <p className="text-sm font-medium text-txt-secondary mb-2">Zugewiesene Dokumente</p>
-            {selectedVisitor.documents.map(doc => (
-              <p key={doc.id} className="text-sm text-txt-primary">{doc.name}</p>
-            ))}
-          </Card>
-        )}
-        {selectedVisitor.contacts.length > 0 && (
-          <Card padding="md">
-            <p className="text-sm font-medium text-txt-secondary mb-2">Zugewiesene Ansprechpartner</p>
-            {selectedVisitor.contacts.map(c => (
-              <p key={c.id} className="text-sm text-txt-primary">{c.name}{c.role ? ` — ${c.role}` : ''}</p>
-            ))}
-          </Card>
-        )}
+        {/* Documents assignment */}
+        <Card padding="md">
+          <div className="flex items-center gap-2 mb-3">
+            <FileText className="w-5 h-5 text-accent" />
+            <h3 className="font-semibold text-txt-primary">Dokumente zuweisen</h3>
+          </div>
+          {allDocuments.length === 0 ? (
+            <p className="text-sm text-txt-muted py-2">Keine Dokumente konfiguriert.</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {allDocuments.filter(d => d.active).map(doc => {
+                const selected = selectedDocIds.has(doc.id);
+                return (
+                  <button
+                    key={doc.id}
+                    type="button"
+                    onClick={() => toggleDoc(doc.id)}
+                    className={`relative flex items-center gap-3 w-full min-h-[48px] p-3 rounded-lg border-2 text-left transition-all duration-200 ${
+                      selected
+                        ? 'border-accent bg-accent-muted'
+                        : 'border-border bg-bg-primary hover:border-border-hover'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                      selected ? 'bg-accent border-accent' : 'border-border'
+                    }`}>
+                      {selected && <Check className="w-3 h-3 text-white" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium truncate ${selected ? 'text-accent' : 'text-txt-primary'}`}>
+                        {doc.name}
+                      </p>
+                      {doc.category && (
+                        <span className="text-xs text-txt-muted">{doc.category}</span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+
+        {/* Contacts assignment */}
+        <Card padding="md">
+          <div className="flex items-center gap-2 mb-3">
+            <Users className="w-5 h-5 text-accent" />
+            <h3 className="font-semibold text-txt-primary">Ansprechpartner zuweisen</h3>
+          </div>
+          {allContacts.length === 0 ? (
+            <p className="text-sm text-txt-muted py-2">Keine Ansprechpartner konfiguriert.</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {allContacts.filter(c => c.active).map(contact => {
+                const selected = selectedContactIds.has(contact.id);
+                return (
+                  <button
+                    key={contact.id}
+                    type="button"
+                    onClick={() => toggleContact(contact.id)}
+                    className={`relative flex items-center gap-3 w-full min-h-[48px] p-3 rounded-lg border-2 text-left transition-all duration-200 ${
+                      selected
+                        ? 'border-accent bg-accent-muted'
+                        : 'border-border bg-bg-primary hover:border-border-hover'
+                    }`}
+                  >
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      selected ? 'bg-accent' : 'bg-bg-surface border border-border'
+                    }`}>
+                      <User className={`w-4 h-4 ${selected ? 'text-white' : 'text-txt-muted'}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium truncate ${selected ? 'text-accent' : 'text-txt-primary'}`}>
+                        {contact.name}
+                      </p>
+                      <span className="text-xs text-txt-muted">
+                        {[contact.company, contact.role].filter(Boolean).join(' · ')}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </Card>
 
         {/* Actions */}
         <div className="flex gap-3">
